@@ -109,9 +109,9 @@ python -c "import vapoursynth; print(vapoursynth.core.rife.RIFE)"
 
 ### 3. mpv (0.36+ with VapourSynth support)
 
-[mpv.net](https://mpv-net.github.io/mpv.net/) or
-[shinchiro's mpv builds](https://mpv.srsfckn.biz/) both include VapourSynth
-support out of the box.
+[shinchiro's Windows builds](https://github.com/shinchiro/mpv-winbuild-cmake/releases) or
+[zhongfly's Windows builds](https://github.com/zhongfly/mpv-winbuild/releases) both
+include VapourSynth support out of the box.
 
 ## Installation
 
