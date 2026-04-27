@@ -1,0 +1,30 @@
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.iml
+
+# Build artifacts
+*.dll
+*.so
+*.dylib
+*.exe
+*.pdb
+
+# Test outputs
+test_*.py
+output_*.mp4
+
+# Environment
+__pycache__/
+*.pyc
+.env
+venv/
+.venv/
