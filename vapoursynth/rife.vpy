@@ -3,7 +3,7 @@
 # Target: NVIDIA RTX 3050 4 GB VRAM
 # Model:   rife-v4.12-lite (model=37), gpu_thread=1
 # =============================================================================
-# Place this file in %APDATA%\mpv\vapoursynth\ (Windows)
+# Place this file in %APPDATA%\mpv\vapoursynth\ (Windows)
 # or ~/.config/mpv/vapoursynth/ (Linux/macOS)
 #
 # Load via mpv:  --profile=rife-1080p
@@ -22,7 +22,7 @@ src = video_in
 # ---------------------------------------------------------------------------
 # Colour conversion  YUV → RGB float32 (mandatory for RIFE)
 # ---------------------------------------------------------------------------
-rgb = core.resize.Bicubic(src, format=vs.RGBS, matrix_s="709")
+rgb = core.resize.Bicubic(src, format=vs.RGBS, matrix_s="709", chromaloc_s="left")
 
 # ---------------------------------------------------------------------------
 # RIFE interpolation
@@ -49,7 +49,7 @@ out = core.rife.RIFE(
 # ---------------------------------------------------------------------------
 # Colour conversion  RGB float32 → YUV (for mpv output)
 # ---------------------------------------------------------------------------
-out = core.resize.Bicubic(out, format=vs.YUV420P8, matrix_s="709")
+out = core.resize.Bicubic(out, format=vs.YUV420P8, matrix_s="709", chromaloc="left")
 
 # ---------------------------------------------------------------------------
 # Output — mpv picks up the last clip that has set_output()

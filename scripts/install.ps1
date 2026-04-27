@@ -23,6 +23,14 @@ param(
     [switch]$DryRun = $false
 )
 
+# On Windows, warn if PowerShell execution policy blocks scripts.
+if ($isWindows -and (Get-ExecutionPolicy -Scope CurrentUser -ErrorAction SilentlyContinue) -eq "Restricted") {
+    Write-Host "NOTE: PowerShell execution policy is Restricted." -ForegroundColor Yellow
+    Write-Host "  Run the following to allow script execution:" -ForegroundColor Yellow
+    Write-Host "    Set-ExecutionPolicy -Scope CurrentUser RemoteSigned" -ForegroundColor Yellow
+    Write-Host ""
+}
+
 $ErrorActionPreference = "Stop"
 
 # ── Detect platform ──────────────────────────────────────────────────────────
@@ -30,9 +38,9 @@ $isWindows = [Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT
 
 if (-not $MpvDir) {
     if ($isWindows) {
-        $MpvDir = "$env:APPDATA\mpv"
+        $MpvDir = Join-Path $env:APPDATA "mpv"
     } else {
-        $MpvDir = "$HOME\.config\mpv"
+        $MpvDir = Join-Path $HOME ".config" "mpv"
     }
 }
 
@@ -95,6 +103,11 @@ if (-not (Test-Path $dstMpvConfExample)) {
 foreach ($name in $vpyNames) {
     $src  = Join-Path $RepoRoot "vapoursynth" "$name.vpy"
     $dst  = Join-Path $VapourSynthDir "$name.vpy"
+    if (Test-Path $dst) {
+        $backup = $dst + ".bak"
+        Copy-Item -Path $dst -Destination $backup -Force
+        Write-Host "  BACKUP:   $backup (existing script preserved)"
+    }
     Copy-Item -Path $src -Destination $dst -Force
     Write-Host "  COPIED:   $dst"
 }

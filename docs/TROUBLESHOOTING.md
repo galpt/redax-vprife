@@ -25,9 +25,10 @@ No attribute 'rife'
 **Cause:**  mpv is not receiving valid frames from VapourSynth.
 
 **Fix:**
-1. Test the script standalone:
+1. Test the script using mpv (since `video_in` is mpv-specific and not available
+   when running `vspipe` standalone):
    ```
-   vspipe rife.vpy - --start 0 --end 10
+   mpv --no-audio --frames=10 --vf=vapoursynth="~~/vapoursynth/rife.vpy" video.mkv
    ```
    If this errors, there is a problem with the VapourSynth script itself.
 2. Check the mpv console (`~` key) for VapourSynth error messages.

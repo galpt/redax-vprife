@@ -7,7 +7,7 @@
 # and is significantly lighter than general-purpose models.  It performs well
 # even at native 1080p on 4 GB VRAM.
 #
-# Place this file in %APDATA%\mpv\vapoursynth\ (Windows)
+# Place this file in %APPDATA%\mpv\vapoursynth\ (Windows)
 # or ~/.config/mpv/vapoursynth/ (Linux/macOS)
 #
 # Load via mpv:  --profile=rife-anime
@@ -26,7 +26,7 @@ src = video_in
 # ---------------------------------------------------------------------------
 # Colour conversion  YUV → RGB float32
 # ---------------------------------------------------------------------------
-rgb = core.resize.Bicubic(src, format=vs.RGBS, matrix_s="709")
+rgb = core.resize.Bicubic(src, format=vs.RGBS, matrix_s="709", chromaloc_s="left")
 
 # ---------------------------------------------------------------------------
 # RIFE interpolation
@@ -50,7 +50,7 @@ out = core.rife.RIFE(
 # ---------------------------------------------------------------------------
 # Colour conversion back to YUV
 # ---------------------------------------------------------------------------
-out = core.resize.Bicubic(out, format=vs.YUV420P8, matrix_s="709")
+out = core.resize.Bicubic(out, format=vs.YUV420P8, matrix_s="709", chromaloc="left")
 
 # ---------------------------------------------------------------------------
 # Output

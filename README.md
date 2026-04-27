@@ -44,19 +44,18 @@ this repo is tested against that constraint.
 
 ## Pipeline
 
+```mermaid
+flowchart LR
+    A["mpv<br/>decoded frames"] --> B["VapourSynth script<br/>rife.vpy / rife-720p.vpy"]
+    B --> C["YUV → RGB float32<br/>core.resize.Bicubic"]
+    C --> D["RIFE 2x interpolation<br/>model=37/45 gpu_thread=1-2"]
+    D --> E["RGB float32 → YUV<br/>core.resize.Bicubic"]
+    E --> F["mpv<br/>render & display"]
 ```
-mpv  →  VapourSynth script (.vpy)  →  VapourSynth  →  RIFE (ncnn-Vulkan)  →  mpv
-                                      ┌─────────────┐      ┌──────────────┐
-                                      │ YUV → RGBS  │ ──→  │  rife-v4.x  │
-                                      │ (Bicubic)   │      │  gpu_thr=1  │
-                                      │ SCDetect    │      │  sc=True     │
-                                      └─────────────┘      └──────┬───────┘
-                                                                  │
-                                                           ┌──────▼───────┐
-                                                           │ RGBS → YUV   │
-                                                           │ frame props  │
-                                                           └──────────────┘
-```
+
+The VapourSynth script handles colour-space conversion and RIFE inference
+inside mpv's filter chain.  Scene-change detection (`sc=True`) and VMAF-based
+static-frame skip (`skip=True`) are opt-in — see Advanced tuning.
 
 ## Configuration profiles
 
@@ -76,6 +75,7 @@ mpv  →  VapourSynth script (.vpy)  →  VapourSynth  →  RIFE (ncnn-Vulkan)  
 | `rife-v4.25-lite` | 70 | ~2.5M | ~2.8 GB | Uses `padding=128` — noticeable quality gain but 15% more VRAM |
 | `rife-anime` | 3 | ~1.8M | ~1.3 GB | Old v1 architecture; very light, anime-only |
 
+> [!TIP]
 > **Key insight:** "Ensemble=True" models (+1 from the listed ID, e.g. 37→38)
 > nearly double VRAM and computation for marginal quality gain.  These
 > profiles **always use ensemble=False**.
@@ -200,6 +200,7 @@ Here are the root causes and how this repo addresses each:
 | 30 fps | 60 fps | rife-anime | 45–50 |
 | 60 fps | 120 fps| rife-720p  | 30–35 (may drop frames) |
 
+> [!NOTE]
 > Values measured on RTX 3050 4 GB, Vulkan 1.3, driver 560.  Your mileage
 > may vary with scene complexity and driver version.
 

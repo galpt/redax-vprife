@@ -7,7 +7,7 @@
 # This preserves ~1.5 GB VRAM headroom compared to native 1080p, allowing
 # gpu_thread=2 for smoother real-time playback.
 #
-# Place this file in %APDATA%\mpv\vapoursynth\ (Windows)
+# Place this file in %APPDATA%\mpv\vapoursynth\ (Windows)
 # or ~/.config/mpv/vapoursynth/ (Linux/macOS)
 #
 # Load via mpv:  --profile=rife-720p
@@ -26,13 +26,15 @@ src = video_in
 # ---------------------------------------------------------------------------
 # Colour conversion  YUV → RGB float32
 # ---------------------------------------------------------------------------
-rgb = core.resize.Bicubic(src, format=vs.RGBS, matrix_s="709")
+rgb = core.resize.Bicubic(src, format=vs.RGBS, matrix_s="709", chromaloc_s="left")
 
 # ---------------------------------------------------------------------------
 # Downscale to 720p before RIFE — critical for 4 GB VRAM budget
+# Preserve source aspect ratio to avoid stretching non-16:9 content.
 # ---------------------------------------------------------------------------
-target_width = 1280
 target_height = 720
+src_aspect = src.width / src.height
+target_width = int(round(target_height * src_aspect)) & ~1  # keep even
 
 rgb = core.resize.Bicubic(
     rgb,
@@ -73,7 +75,7 @@ out = core.resize.Bicubic(
 # ---------------------------------------------------------------------------
 # Colour conversion back to YUV
 # ---------------------------------------------------------------------------
-out = core.resize.Bicubic(out, format=vs.YUV420P8, matrix_s="709")
+out = core.resize.Bicubic(out, format=vs.YUV420P8, matrix_s="709", chromaloc="left")
 
 # ---------------------------------------------------------------------------
 # Output
