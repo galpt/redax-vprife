@@ -207,6 +207,6 @@ the nearest keyframe; RIFE adds a significant per-frame cost.
 
 ## Where to get help
 
-- [VapourSynth Discord](https://discord.gg/2FMrza6)
+- [VapourSynth Discussions](https://github.com/vapoursynth/vapoursynth/discussions)
 - [mpv issue tracker](https://github.com/mpv-player/mpv/issues)
 - [RIFE plugin issues](https://github.com/styler00dollar/VapourSynth-RIFE-ncnn-Vulkan/issues)

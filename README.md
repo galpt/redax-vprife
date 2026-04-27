@@ -267,7 +267,7 @@ MIT — see [LICENSE](LICENSE).
 
 ## Acknowledgements
 
-- [RIFE](https://github.com/hzwer/arXiv2020-RIFE) — Real-Time Intermediate Flow Estimation
+- [RIFE](https://github.com/hzwer/ECCV2022-RIFE) — Real-Time Intermediate Flow Estimation
 - [ncnn](https://github.com/Tencent/ncnn) — Neural network inference framework
 - [nihui/rife-ncnn-vulkan](https://github.com/nihui/rife-ncnn-vulkan) — ncnn Vulkan implementation
 - [styler00dollar/VapourSynth-RIFE-ncnn-Vulkan](https://github.com/styler00dollar/VapourSynth-RIFE-ncnn-Vulkan) — VapourSynth plugin
