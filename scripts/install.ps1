@@ -23,6 +23,11 @@ param(
     [switch]$DryRun = $false
 )
 
+$ErrorActionPreference = "Stop"
+
+# ── Detect platform ──────────────────────────────────────────────────────────
+$isWindows = [Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT
+
 # On Windows, warn if PowerShell execution policy blocks scripts.
 if ($isWindows -and (Get-ExecutionPolicy -Scope CurrentUser -ErrorAction SilentlyContinue) -eq "Restricted") {
     Write-Host "NOTE: PowerShell execution policy is Restricted." -ForegroundColor Yellow
@@ -31,16 +36,11 @@ if ($isWindows -and (Get-ExecutionPolicy -Scope CurrentUser -ErrorAction Silentl
     Write-Host ""
 }
 
-$ErrorActionPreference = "Stop"
-
-# ── Detect platform ──────────────────────────────────────────────────────────
-$isWindows = [Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT
-
 if (-not $MpvDir) {
     if ($isWindows) {
         $MpvDir = Join-Path $env:APPDATA "mpv"
     } else {
-        $MpvDir = Join-Path $HOME ".config" "mpv"
+        $MpvDir = [System.IO.Path]::Combine($HOME, ".config", "mpv")
     }
 }
 
@@ -82,7 +82,7 @@ if (-not (Test-Path $VapourSynthDir)) {
 $vpyNames = @("rife", "rife-720p", "rife-anime")
 
 # mpv.conf — only copy if it doesn't already exist (respect user config)
-$srcMpvConf  = Join-Path $RepoRoot "mpv" "mpv.conf"
+$srcMpvConf  = [System.IO.Path]::Combine($RepoRoot, "mpv", "mpv.conf")
 $dstMpvConf  = Join-Path $MpvDir "mpv.conf"
 if (Test-Path $dstMpvConf) {
     Write-Host "  SKIP:     $dstMpvConf (already exists)"
@@ -92,7 +92,7 @@ if (Test-Path $dstMpvConf) {
 }
 
 # Save a reference copy alongside the real config (never overwrites)
-$srcMpvConfExample = Join-Path $RepoRoot "mpv" "mpv.conf"
+$srcMpvConfExample = [System.IO.Path]::Combine($RepoRoot, "mpv", "mpv.conf")
 $dstMpvConfExample = Join-Path $MpvDir "mpv.conf.redax-vprife"
 if (-not (Test-Path $dstMpvConfExample)) {
     Copy-Item -Path $srcMpvConf -Destination $dstMpvConfExample
@@ -101,7 +101,7 @@ if (-not (Test-Path $dstMpvConfExample)) {
 
 # VapourSynth .vpy scripts
 foreach ($name in $vpyNames) {
-    $src  = Join-Path $RepoRoot "vapoursynth" "$name.vpy"
+    $src  = [System.IO.Path]::Combine($RepoRoot, "vapoursynth", "$name.vpy")
     $dst  = Join-Path $VapourSynthDir "$name.vpy"
     if (Test-Path $dst) {
         $backup = $dst + ".bak"
