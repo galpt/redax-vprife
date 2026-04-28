@@ -155,6 +155,18 @@ This copies:
 - `%APPDATA%\mpv\mpv.conf.redax-vprife` — reference copy of our config
 - `%APPDATA%\mpv\vapoursynth\rife*.vpy` — VapourSynth scripts
 
+#### Diagnosis
+
+If RIFE still fails, run the diagnosis script to check plugin registration,
+models directory layout, and GPU device indices in one go:
+
+```powershell
+.\scripts\diagnose.ps1
+```
+
+This reports exactly which models are missing and where the `models\` folder
+should be placed.
+
 ### Manual
 
 | File | Destination |
@@ -244,6 +256,7 @@ redax-vprife/
 │   ├── rife-720p.vpy        720p downscale script (model 45)
 │   └── rife-anime.vpy       Anime script (model 3)
 ├── scripts/
+│   ├── diagnose.ps1         RIFE installation diagnosis (run this first on errors)
 │   ├── install.ps1          Automated install for Windows
 │   ├── test-rife.ps1        Quick VRAM/performance benchmark
 │   └── toggle-rife.ps1      Runtime profile switching via IPC
