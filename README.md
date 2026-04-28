@@ -136,6 +136,15 @@ cd redax-vprife
 .\scripts\install.ps1
 ```
 
+To **overwrite** an existing `mpv.conf` with the latest version (e.g. after
+pulling repo updates), use the `-Force` flag.  Your old config is backed up
+as `mpv.conf.bak`:
+
+```powershell
+git pull
+.\scripts\install.ps1 -Force
+```
+
 > [!IMPORTANT]
 > **Administrator rights are NOT required.**  All files go under
 > `%APPDATA%\mpv\` which your user account already owns.  Running as
