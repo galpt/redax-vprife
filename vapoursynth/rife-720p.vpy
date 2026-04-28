@@ -49,12 +49,14 @@ rgb = core.resize.Bicubic(
 #
 # model       = 45   → rife-v4.14-lite (ensemble=False)
 #                      Slightly newer than v4.12-lite; still lightweight.
+# gpu_id      = 1   → NVIDIA RTX 3050 (see rife.vpy header for dual-GPU notes).
 # gpu_thread  = 2    → At 720p, two inference queues fit in 4 GB VRAM.
 #                      This doubles throughput vs gpu_thread=1.
 # ---------------------------------------------------------------------------
 out = core.rife.RIFE(
     rgb,
     model=45,
+    gpu_id=1,
     gpu_thread=2,
     sc=False,
     factor_num=2,

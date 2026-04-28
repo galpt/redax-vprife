@@ -3,6 +3,24 @@
 Common issues when setting up RIFE interpolation with mpv + VapourSynth on
 an RTX 3050 4 GB.
 
+## Dual-GPU laptops (Intel + NVIDIA)
+
+Most RTX 3050 laptops are dual-GPU (Intel UHD Graphics + NVIDIA GeForce).
+The Vulkan device order is typically:
+- Index 0 → Intel iGPU (zero compute queues — **not usable with ncnn**)
+- Index 1 → NVIDIA RTX 3050 (2+ compute queues — **must use this**)
+
+The configs in this repo ship with `gpu_id=1` in every `.vpy` script.
+If you only have a single GPU (desktop RTX 3050), change `gpu_id=1` to
+`gpu_id=0` or remove the parameter.
+
+To verify your device layout, run a test script:
+```python
+core.rife.RIFE(rgb, list_gpu=True)
+```
+
+---
+
 ## RIFE plugin not found
 
 ```
@@ -142,6 +160,48 @@ Then set `sc=True` in the RIFE call.
 
 ---
 
+## RIFE: failed to load model
+
+```
+RIFE: failed to load model
+```
+
+**Cause (most common on dual-GPU laptops):**  The RIFE plugin can't find
+`flownet.param` or the selected GPU can't run ncnn's compute shaders.
+On dual-GPU systems (Intel iGPU + NVIDIA dGPU) the Intel GPU is often
+GPU index 0 but has **zero compute queues**, causing the model load to
+silently fail.
+
+**Fix:**
+1. Ensure the `models/` folder is in the same directory as `rife.dll`:
+   ```
+   %APPDATA%\VapourSynth\plugins64\
+       rife.dll
+       models\
+           rife-v4.12-lite_ensembleFalse\flownet.param
+           rife-v4.14-lite_ensembleFalse\flownet.param
+           ...
+   ```
+2. If you have **dual GPUs** (Intel + NVIDIA), explicitly set the GPU
+   index in your `.vpy` script.  To discover device indices:
+   ```python
+   core.rife.RIFE(rgb, list_gpu=True)
+   ```
+   This outputs a list of Vulkan devices to the first video frame.
+   Common layout on Optimus laptops:
+   - Index 0 → Intel UHD Graphics (compute queues: 0 — **not usable**)
+   - Index 1 → NVIDIA RTX 3050 (compute queues: 2+ — **use this**)
+   
+   Then set the correct index in your script (the default configs now
+   ship with `gpu_id=1` for NVIDIA RTX 3050):
+   ```python
+   out = core.rife.RIFE(rgb, model=37, gpu_id=1, ...)
+   ```
+3. If you only have a single NVIDIA GPU, change `gpu_id=1` to
+   `gpu_id=0` (or remove the parameter entirely).
+
+---
+
 ## ncnn: failed to create GPU instance
 
 ```
@@ -151,16 +211,16 @@ RIFE: failed to create GPU instance
 **Cause:**  The RIFE plugin cannot initialise the Vulkan GPU context.
 
 **Fix:**
-1. Verify your GPU supports Vulkan 1.2+.
-2. Try specifying the GPU ID explicitly:
-   ```python
-   out = core.rife.RIFE(rgb, gpu_id=0, ...)
-   ```
-3. Use `list_gpu=True` to discover device indices:
+1. Verify your GPU supports Vulkan 1.2+ (NVIDIA driver 545+).
+2. Ensure `gpu_id` points to a discrete GPU, not an integrated GPU
+   with zero compute queues.  Use `list_gpu=True` to enumerate:
    ```python
    core.rife.RIFE(rgb, list_gpu=True)
    ```
-   This outputs available GPU devices to the first frame.
+3. Try specifying the GPU ID explicitly in your `.vpy` script:
+   ```python
+   out = core.rife.RIFE(rgb, gpu_id=1, ...)
+   ```
 
 ---
 

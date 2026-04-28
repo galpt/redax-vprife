@@ -42,6 +42,14 @@ exhausts VRAM within seconds, causing the Vulkan driver to fall back to
 system RAM (crushing frame times) or crash outright.  Every configuration in
 this repo is tested against that constraint.
 
+> [!IMPORTANT]
+> **Dual-GPU laptops:** Most RTX 3050 laptops also have an Intel integrated
+> GPU.  On these systems the iGPU appears as Vulkan device index 0 (with
+> **zero compute queues** — unusable for ncnn) and the NVIDIA dGPU as index 1.
+> All `.vpy` scripts in this repo ship with `gpu_id=1` for this reason.
+> If you have a single-GPU desktop, change `gpu_id=1` to `gpu_id=0` or
+> remove the parameter.
+
 ## Pipeline
 
 ```mermaid
@@ -186,7 +194,7 @@ Here are the root causes and how this repo addresses each:
 | **VRAM exhaustion** | Default `gpu_thread=2` + heavy model at 1080p overflows 4 GB → Vulkan OOM / system RAM fallback | `gpu_thread=1`, lite models, 720p downscale |
 | **Frame drops** | Inference takes longer than frame interval (e.g. 41.6 ms for 24 fps → 48 fps) | 720p downscale reduces per-frame compute by ~55% |
 | **Stutter at scene changes** | RIFE interpolates across scene cuts → ghosting → decoder desync | `sc=True` (with SCDetect) skips interpolation at cuts |
-| **Input jitter** | mpv's own `interpolation=yes` + RIFE double-processes frames | `interpolation=no`, `tscale=no` in mpv.conf |
+| **Input jitter** | mpv's own `interpolation=yes` + RIFE double-processes frames | `interpolation=no` in mpv.conf (tscale auto-disabled) |
 | **GPU under-utilisation** | ncnn defaults to 2 threads; some GPUs benefit from more | Tuned `gpu_thread` per resolution/model combo |
 
 ## Performance targets

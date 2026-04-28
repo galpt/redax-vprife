@@ -30,6 +30,10 @@ rgb = core.resize.Bicubic(src, format=vs.RGBS, matrix_s="709", chromaloc_s="left
 # model       = 37   → rife-v4.12-lite (ensemble=False)
 #                      Lightest v4-lite model; fits ~2 concurrent inferences
 #                      in 4 GB VRAM at 1080p.
+# gpu_id      = 1   → NVIDIA RTX 3050.  On dual-GPU laptops (Intel + NVIDIA)
+#                      the iGPU is typically index 0 with zero compute queues;
+#                      pass the correct index or omit for auto-detection.
+#                      Use list_gpu=True in a test script to enumerate devices.
 # gpu_thread  = 1    → One inference queue.  Saves ~500 MB VRAM vs default 2.
 # sc          = True → Skip interpolation over scene changes (requires
 #                      _SceneChangeNext frame property — see advanced variant
@@ -40,6 +44,7 @@ rgb = core.resize.Bicubic(src, format=vs.RGBS, matrix_s="709", chromaloc_s="left
 out = core.rife.RIFE(
     rgb,
     model=37,
+    gpu_id=1,
     gpu_thread=1,
     sc=False,
     factor_num=2,

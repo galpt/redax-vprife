@@ -35,12 +35,14 @@ rgb = core.resize.Bicubic(src, format=vs.RGBS, matrix_s="709", chromaloc_s="left
 #                     Specifically tuned for flat-colour / cel-shaded frames.
 #                     Very low VRAM footprint — runs comfortably at 1080p
 #                     on 4 GB VRAM even with gpu_thread=2.
+# gpu_id     = 1   → NVIDIA RTX 3050 (see rife.vpy header for dual-GPU notes).
 # gpu_thread = 2    → Two concurrent inference queues; safe on this model.
 # factor_num = 2    → 2x frame rate.
 # ---------------------------------------------------------------------------
 out = core.rife.RIFE(
     rgb,
     model=3,
+    gpu_id=1,
     gpu_thread=2,
     sc=False,
     factor_num=2,
