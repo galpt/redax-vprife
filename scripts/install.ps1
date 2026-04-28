@@ -36,6 +36,21 @@ $ErrorActionPreference = "Stop"
 # ── Detect platform ──────────────────────────────────────────────────────────
 $isWindows = [Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT
 
+# Check for admin rights — warn if running elevated (unnecessary, all paths
+# are under %APPDATA% which is user-writable).
+$isAdmin = $false
+if ($isWindows) {
+    $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $principal = New-Object Security.Principal.WindowsPrincipal($identity)
+    $isAdmin = $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+if ($isAdmin) {
+    Write-Host "NOTE: Running as Administrator.  This is not required" -ForegroundColor Yellow
+    Write-Host "  — all files go under %APPDATA% which is already writable" -ForegroundColor Yellow
+    Write-Host "  by your user account.  Continue either way." -ForegroundColor Yellow
+    Write-Host ""
+}
+
 # On Windows, warn if PowerShell execution policy blocks scripts.
 if ($isWindows -and (Get-ExecutionPolicy -Scope CurrentUser -ErrorAction SilentlyContinue) -eq "Restricted") {
     Write-Host "NOTE: PowerShell execution policy is Restricted." -ForegroundColor Yellow
@@ -76,14 +91,33 @@ if ($DryRun) {
     return
 }
 
-# ── Create directories ──────────────────────────────────────────────────────
+# ── Verify writability before touching anything ─────────────────────────────
+$testFile = [System.IO.Path]::Combine($MpvDir, ".redax-vprife-write-test")
+try {
+    $null = New-Item -ItemType Directory -Path $MpvDir -Force -ErrorAction Stop
+    "test" | Out-File -FilePath $testFile -Encoding utf8 -ErrorAction Stop
+    Remove-Item -Path $testFile -Force -ErrorAction SilentlyContinue
+} catch {
+    Write-Host ""
+    Write-Host "ERROR: Cannot write to $MpvDir" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "This script does NOT need Administrator rights." -ForegroundColor Yellow
+    Write-Host "All files are written under %APPDATA% which your user" -ForegroundColor Yellow
+    Write-Host "account already controls.  Check that:" -ForegroundColor Yellow
+    Write-Host "  1. The path exists and is not read-only." -ForegroundColor Yellow
+    Write-Host "  2. No other process (antivirus) is locking the folder." -ForegroundColor Yellow
+    Write-Host "  3. You are not running from a restricted environment." -ForegroundColor Yellow
+    exit 1
+}
+
+# ── Create output directories ───────────────────────────────────────────────
 if (-not (Test-Path $MpvDir)) {
-    New-Item -ItemType Directory -Path $MpvDir -Force | Out-Null
+    $null = New-Item -ItemType Directory -Path $MpvDir -Force
     Write-Host "  Created:  $MpvDir"
 }
 
 if (-not (Test-Path $VapourSynthDir)) {
-    New-Item -ItemType Directory -Path $VapourSynthDir -Force | Out-Null
+    $null = New-Item -ItemType Directory -Path $VapourSynthDir -Force
     Write-Host "  Created:  $VapourSynthDir"
 }
 

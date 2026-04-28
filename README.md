@@ -136,6 +136,11 @@ cd redax-vprife
 .\scripts\install.ps1
 ```
 
+> [!IMPORTANT]
+> **Administrator rights are NOT required.**  All files go under
+> `%APPDATA%\mpv\` which your user account already owns.  Running as
+> Admin is harmless but unnecessary.
+
 This copies:
 - `%APPDATA%\mpv\mpv.conf` — only if it doesn't already exist
 - `%APPDATA%\mpv\mpv.conf.redax-vprife` — reference copy of our config
