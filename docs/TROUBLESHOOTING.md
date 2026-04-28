@@ -166,39 +166,64 @@ Then set `sc=True` in the RIFE call.
 RIFE: failed to load model
 ```
 
-**Cause (most common on dual-GPU laptops):**  The RIFE plugin can't find
-`flownet.param` or the selected GPU can't run ncnn's compute shaders.
-On dual-GPU systems (Intel iGPU + NVIDIA dGPU) the Intel GPU is often
-GPU index 0 but has **zero compute queues**, causing the model load to
-silently fail.
+**Cause:**  The plugin can't open `flownet.param` inside the model
+directory.  This is almost always a **models-directory layout** issue
+— the plugin derives the path from its own DLL location:
 
-**Fix:**
-1. Ensure the `models/` folder is in the same directory as `rife.dll`:
-   ```
-   %APPDATA%\VapourSynth\plugins64\
-       rife.dll
-       models\
-           rife-v4.12-lite_ensembleFalse\flownet.param
-           rife-v4.14-lite_ensembleFalse\flownet.param
-           ...
-   ```
-2. If you have **dual GPUs** (Intel + NVIDIA), explicitly set the GPU
-   index in your `.vpy` script.  To discover device indices:
-   ```python
-   core.rife.RIFE(rgb, list_gpu=True)
-   ```
-   This outputs a list of Vulkan devices to the first video frame.
-   Common layout on Optimus laptops:
-   - Index 0 → Intel UHD Graphics (compute queues: 0 — **not usable**)
-   - Index 1 → NVIDIA RTX 3050 (compute queues: 2+ — **use this**)
-   
-   Then set the correct index in your script (the default configs now
-   ship with `gpu_id=1` for NVIDIA RTX 3050):
-   ```python
-   out = core.rife.RIFE(rgb, model=37, gpu_id=1, ...)
-   ```
-3. If you only have a single NVIDIA GPU, change `gpu_id=1` to
-   `gpu_id=0` (or remove the parameter entirely).
+```
+{plugin_dir}\models\{model_name}\flownet.param
+```
+
+The `model_name` is auto-generated from the `model=` parameter value.
+For example, `model=45` looks for:
+```
+{plugin_dir}\models\rife-v4.14-lite_ensembleFalse\flownet.param
+```
+
+**Verify the directory layout:**
+
+Run this in PowerShell to check where VapourSynth expects the models:
+
+```powershell
+# Find where rife.dll is loaded from
+python -c "import vapoursynth; print(vapoursynth.core.get_plugins()['com.holywu.rife'].path)"
+```
+
+The expected models path is the DLL's directory + `\models\`.
+For example, if the DLL is at:
+```
+%APPDATA%\VapourSynth\plugins64\rife.dll
+```
+Then models must be at:
+```
+%APPDATA%\VapourSynth\plugins64\models\
+```
+
+**Correct layout:**
+```
+%APPDATA%\VapourSynth\plugins64\
+    rife.dll
+    models\
+        rife-v4.12-lite_ensembleFalse\
+            flownet.param
+        rife-v4.14-lite_ensembleFalse\
+            flownet.param
+        rife-anime\
+            flownet.param
+```
+
+**Wrong layouts that cause this error:**
+- ❌ `models\` is inside the ZIP but was never extracted
+- ❌ `models\` is in a different folder (e.g. next to `mpv.exe`)
+- ❌ Only `rife.dll` was copied, the `models\` directory was skipped
+- ❌ The ZIP was extracted to a temp folder and only `rife.dll` was moved
+
+**Tip:** If you're unsure, pass `model_path` explicitly in your `.vpy`
+script to a known-good path where the models exist:
+
+```python
+out = core.rife.RIFE(rgb, model=37, model_path="C:/path/to/models/rife-v4.12-lite_ensembleFalse", ...)
+```
 
 ---
 

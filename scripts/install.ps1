@@ -4,22 +4,30 @@
 .DESCRIPTION
     Copies mpv.conf, VapourSynth scripts, and profiles to the appropriate
     directories.  Compatible with Windows (default) and Linux/macOS.
+
+    By default, mpv.conf is SKIPPED if it already exists (to avoid
+    overwriting user-customised settings).  Pass -Force to overwrite it.
+    VapourSynth .vpy files are always overwritten (with a .bak backup).
 .PARAMETER MpvDir
     Path to mpv configuration directory.
     Default: %APPDATA%\mpv  (Windows)  or  ~/.config/mpv  (Unix)
 .PARAMETER VapourSynthDir
     Path to VapourSynth scripts directory (under MpvDir).
     Default: <MpvDir>\vapoursynth
+.PARAMETER Force
+    Overwrite existing mpv.conf (backup saved as mpv.conf.bak).
 .PARAMETER DryRun
     If set, only print what would be copied without copying.
 .EXAMPLE
-    .\install.ps1                     # interactive install
-    .\install.ps1 -DryRun             # preview only
+    .\install.ps1                        # safe install (preserves mpv.conf)
+    .\install.ps1 -Force                 # overwrite mpv.conf with latest
+    .\install.ps1 -DryRun                # preview only
 #>
 
 param(
     [string]$MpvDir = "",
     [string]$VapourSynthDir = "",
+    [switch]$Force = $false,
     [switch]$DryRun = $false
 )
 
@@ -55,14 +63,15 @@ Write-Host "=== redax-vprife Installer ===" -ForegroundColor Cyan
 Write-Host "  Platform:    $([Environment]::OSVersion.Platform)"
 Write-Host "  Mpv config:  $MpvDir"
 Write-Host "  VS scripts:  $VapourSynthDir"
+Write-Host "  Force:       $Force"
 Write-Host "  Dry-run:     $DryRun"
 Write-Host ""
 
 if ($DryRun) {
-    Write-Host "[DRY-RUN] Would create: $MpvDir\mpv.conf"
-    Write-Host "[DRY-RUN] Would create: $VapourSynthDir\rife.vpy"
-    Write-Host "[DRY-RUN] Would create: $VapourSynthDir\rife-720p.vpy"
-    Write-Host "[DRY-RUN] Would create: $VapourSynthDir\rife-anime.vpy"
+    Write-Host "[DRY-RUN] Would copy: $MpvDir\mpv.conf"
+    Write-Host "[DRY-RUN] Would copy: $VapourSynthDir\rife.vpy"
+    Write-Host "[DRY-RUN] Would copy: $VapourSynthDir\rife-720p.vpy"
+    Write-Host "[DRY-RUN] Would copy: $VapourSynthDir\rife-anime.vpy"
     Write-Host "[DRY-RUN] No files modified."
     return
 }
@@ -78,14 +87,20 @@ if (-not (Test-Path $VapourSynthDir)) {
     Write-Host "  Created:  $VapourSynthDir"
 }
 
-# ── Copy files ──────────────────────────────────────────────────────────────
-$vpyNames = @("rife", "rife-720p", "rife-anime")
-
-# mpv.conf — only copy if it doesn't already exist (respect user config)
+# ── Copy mpv.conf ───────────────────────────────────────────────────────────
 $srcMpvConf  = [System.IO.Path]::Combine($RepoRoot, "mpv", "mpv.conf")
 $dstMpvConf  = Join-Path $MpvDir "mpv.conf"
+
 if (Test-Path $dstMpvConf) {
-    Write-Host "  SKIP:     $dstMpvConf (already exists)"
+    if ($Force) {
+        $backup = $dstMpvConf + ".bak"
+        Copy-Item -Path $dstMpvConf -Destination $backup -Force
+        Write-Host "  BACKUP:   $backup"
+        Copy-Item -Path $srcMpvConf -Destination $dstMpvConf -Force
+        Write-Host "  COPIED:   $dstMpvConf (forced)"
+    } else {
+        Write-Host "  SKIP:     $dstMpvConf (already exists — use -Force to overwrite)"
+    }
 } else {
     Copy-Item -Path $srcMpvConf -Destination $dstMpvConf
     Write-Host "  COPIED:   $dstMpvConf"
@@ -99,14 +114,15 @@ if (-not (Test-Path $dstMpvConfExample)) {
     Write-Host "  COPIED:   $dstMpvConfExample (reference copy)"
 }
 
-# VapourSynth .vpy scripts
+# ── Copy VapourSynth .vpy scripts ──────────────────────────────────────────
+$vpyNames = @("rife", "rife-720p", "rife-anime")
 foreach ($name in $vpyNames) {
     $src  = [System.IO.Path]::Combine($RepoRoot, "vapoursynth", "$name.vpy")
     $dst  = Join-Path $VapourSynthDir "$name.vpy"
     if (Test-Path $dst) {
         $backup = $dst + ".bak"
         Copy-Item -Path $dst -Destination $backup -Force
-        Write-Host "  BACKUP:   $backup (existing script preserved)"
+        Write-Host "  BACKUP:   $backup"
     }
     Copy-Item -Path $src -Destination $dst -Force
     Write-Host "  COPIED:   $dst"
@@ -115,4 +131,7 @@ foreach ($name in $vpyNames) {
 Write-Host ""
 Write-Host "=== Install complete ===" -ForegroundColor Green
 Write-Host "Launch mpv with:  mpv video.mkv --profile=rife-720p"
-Write-Host "Or set a default profile in $MpvDir\mpv.conf"
+Write-Host ""
+Write-Host "If you ran this before and mpv still shows old errors, run:" -ForegroundColor Yellow
+Write-Host "  .\install.ps1 -Force" -ForegroundColor Yellow
+Write-Host "to overwrite mpv.conf with the latest version (backup saved)." -ForegroundColor Yellow

@@ -111,8 +111,13 @@ Verify installation:
 ```powershell
 vspipe --version
 # Should show R74+
+
 python -c "import vapoursynth; print(vapoursynth.core.rife.RIFE)"
-# Should not error
+# Should not error — confirms the plugin DLL is registered
+
+# Verify models are accessible (look for the default model directory):
+python -c "import vapoursynth, os; p = vapoursynth.core.get_plugins()['com.holywu.rife'].path; print('DLL at:', p); print('Models at:', os.path.dirname(p) + '/models'); print('Has flownet.param:', os.path.isfile(os.path.join(os.path.dirname(p), 'models', 'rife-v4.12-lite_ensembleFalse', 'flownet.param')))"
+# Should print "Has flownet.param: True"
 ```
 
 ### 3. mpv (0.36+ with VapourSynth support)
