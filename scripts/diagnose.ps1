@@ -29,12 +29,17 @@ try {
     $vsInfo = python -c "
 import vapoursynth as vs
 core = vs.core
-plugins = core.get_plugins()
-rife = plugins.get('com.holywu.rife')
+rife = None
+rife_path = ''
+for plugin in core.plugins():
+    if plugin.identifier == 'com.holywu.rife':
+        rife = plugin
+        rife_path = plugin.plugin_path
+        break
 print('VS_VERSION=' + vs.__version__)
 print('RIFE_REGISTERED=' + str(rife is not None))
 if rife:
-    print('RIFE_PATH=' + rife.path)
+    print('RIFE_PATH=' + rife_path)
 " 2>&1
     if ($LASTEXITCODE -ne 0) {
         Fail "Python/VapourSynth check failed."
